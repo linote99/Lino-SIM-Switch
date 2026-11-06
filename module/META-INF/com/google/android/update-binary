@@ -1,0 +1,44 @@
+#!/sbin/sh
+# Magisk 模块安装/卸载脚本
+umask 022
+OUTFD=$2
+ZIPFILE=$3
+MOD=/data/adb/modules/lino_sim_switch
+
+ui_print() { echo "$1"; }
+
+# 卸载（Magisk 会在 remove 时调用）
+if [ "$1" = "remove" ]; then
+    ui_print "- 正在恢复双卡模式"
+    setprop persist.radio.multisim.config dsds
+    ui_print "- 已恢复 dsds，重启后生效"
+    exit 0
+fi
+
+ui_print "- Lino SIM 卡槽控制"
+ui_print "- 安装中…"
+
+# 清理旧模块
+[ -d /data/adb/modules/lino_simctl ] && {
+    ui_print "- 移除旧模块 lino_simctl"
+    rm -rf /data/adb/modules/lino_simctl
+    rm -rf /data/lino_simctl
+}
+
+mkdir -p "$MOD"
+cd "$(dirname "$ZIPFILE")" 2>/dev/null
+unzip -o "$ZIPFILE" -d "$MOD" 'module.prop' 'post-fs-data.sh' >/dev/null 2>&1
+
+cd "$MOD" || exit 1
+chmod 644 module.prop 2>/dev/null
+chmod 755 post-fs-data.sh 2>/dev/null
+
+# 首次安装默认单卡
+[ -f /data/local/tmp/lino_sim_switch_mode ] || echo "single" > /data/local/tmp/lino_sim_switch_mode
+
+# 立即生效
+setprop persist.radio.multisim.config ""
+
+ui_print "- 安装完成，已立即生效（单卡模式）"
+ui_print "- 重启后保持"
+ui_print "- 需要用 UFI-TOOLS 插件切换"

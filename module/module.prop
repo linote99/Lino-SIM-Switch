@@ -1,0 +1,6 @@
+id=lino_sim_switch
+name=Lino SIM 卡槽控制
+version=v2.0
+versionCode=20
+author=lino
+description=通过 persist.radio.multisim.config 控制系统按几张卡启动。开机自动禁用无网的内置厂商卡，避免抢走移动数据和弹出选卡对话框。配合 UFI-TOOLS 插件切换。
